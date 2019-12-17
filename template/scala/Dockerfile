@@ -15,7 +15,8 @@ RUN echo "Copied Sources" && ls
 
 RUN echo "Building with SBT"
 RUN sbt clean assembly
-COPY function/target/scala-2.12/handler.jar ./
+RUN cp target/scala-2.12/handler.jar .
+
 ENV fprocess="java -jar handler.jar"
 
 # Set to true to see request in function logs
