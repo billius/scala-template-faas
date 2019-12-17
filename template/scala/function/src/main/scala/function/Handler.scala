@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives._
 
 trait Handler {
 
-  def routeMap: Route = path("ping") {
+  def routeMap: Route = {
     complete("pong")
   }
 }
