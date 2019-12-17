@@ -1,9 +1,11 @@
 package function
 
-object Handler {
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.Directives._
 
-  def handle(value: String) = {
-    println(value)
+trait Handler {
+
+  def routeMap: Route = path("ping") {
+    complete("pong")
   }
-
 }

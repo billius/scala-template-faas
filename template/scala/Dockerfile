@@ -1,17 +1,11 @@
-# Pull base image from https://github.com/hseeberger/scala-sbt
+FROM openfaas/of-watchdog:0.7.2 as watchdog
 FROM hseeberger/scala-sbt
 
-# 1. Use any image as your base image, or "scratch"
-# 2. Add fwatchdog binary via https://github.com/openfaas/faas/releases/
-# 3. Then set fprocess to the process you want to invoke per request - i.e. "cat" or "my_binary"
 
-#ADD https://github.com/openfaas/faas/releases/download/0.8.9/fwatchdog /usr/bin
-#RUN chmod +x /usr/bin/fwatchdog
+COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
+RUN chmod +x /usr/bin/fwatchdog
 
-RUN echo "Pulling watchdog binary from Github." \
-    && curl -sSL https://github.com/openfaas/faas/releases/download/0.8.9/fwatchdog > /usr/bin/fwatchdog \
-    && chmod +x /usr/bin/fwatchdog \
-    && cp /usr/bin/fwatchdog /home/app
+
 
 # Function
 COPY function function/
@@ -21,12 +15,16 @@ RUN echo "Copied Sources" && ls
 
 RUN echo "Building with SBT"
 RUN sbt clean assembly
-
-# Populate example here - i.e. "cat", "sha512sum" or "node index.js"
+COPY function/target/scala-2.12/handler.jar ./
 ENV fprocess="java -jar handler.jar"
 
 # Set to true to see request in function logs
 ENV write_debug="true"
+ENV mode="http"
+ENV upstream_url="http://127.0.0.1:8012"
+
+EXPOSE 8080
+
 
 HEALTHCHECK --interval=5s CMD [ -e /tmp/.lock ] || exit 1
 CMD [ "fwatchdog" ]
